@@ -14,7 +14,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 /**
- * Inserts mock journal photos for development: the images and `mock_photos.json` in the debug
+ * Inserts mock journal photos for development: the images and `mock_photos.json` (Traditional
+ * Chinese; `mock_photos_en.json` / `mock_photos_ja.json` for English / Japanese) in the debug
  * assets (`app/src/debug/assets/mock/`), so release builds don't ship them.
  *
  * Each JSON entry: `file`, a capture time, and optional `placeName`, `latitude`, `longitude`, `note`.
@@ -37,9 +38,13 @@ class MockDataSeeder(
         debuggable && runCatching { context.assets.list(AssetDir)?.contains(DataFile) == true }.getOrDefault(false)
     }
 
-    /** Inserts the mock photos (updating ones inserted before); returns how many were newly added. */
-    suspend fun insert(): Int = withContext(Dispatchers.IO) {
-        val json = context.assets.open("$AssetDir/$DataFile").bufferedReader().use { it.readText() }
+    /**
+     * Inserts the mock photos with place names and notes in [languageTag] ("zh-TW", "en" or "ja"),
+     * updating ones inserted before — so picking another language re-labels them. Returns how many
+     * were newly added.
+     */
+    suspend fun insert(languageTag: String): Int = withContext(Dispatchers.IO) {
+        val json = context.assets.open("$AssetDir/${dataFileFor(languageTag)}").bufferedReader().use { it.readText() }
         val entries = JSONArray(json)
         val imageDir = File(context.filesDir, ImageDir).apply { mkdirs() }
         val now = System.currentTimeMillis()
@@ -85,6 +90,13 @@ class MockDataSeeder(
             }
         }
         repository.addPhotos(photos).size
+    }
+
+    /** The same photos, times and GPS in every file; only `placeName` and `note` are translated. */
+    private fun dataFileFor(languageTag: String): String = when {
+        languageTag.startsWith("en") -> "mock_photos_en.json"
+        languageTag.startsWith("ja") -> "mock_photos_ja.json"
+        else -> DataFile // Traditional Chinese
     }
 
     private fun JSONObject.optDoubleOrNull(name: String): Double? =

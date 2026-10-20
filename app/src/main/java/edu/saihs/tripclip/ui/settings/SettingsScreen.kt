@@ -3,7 +3,7 @@ package edu.saihs.tripclip.ui.settings
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -105,14 +106,12 @@ fun SettingsScreen(onBack: () -> Unit) {
             val scope = rememberCoroutineScope()
             var inserting by remember { mutableStateOf(false) }
             SettingsSection(stringResource(R.string.settings_developer)) {
-                ActionRow(
-                    title = stringResource(R.string.settings_insert_mock),
-                    subtitle = stringResource(R.string.settings_insert_mock_hint),
+                MockDataRow(
                     enabled = !inserting,
-                    onClick = {
+                    onInsert = { option ->
                         inserting = true
                         scope.launch {
-                            val added = runCatching { seeder.insert() }.getOrDefault(0)
+                            val added = runCatching { seeder.insert(option.tag) }.getOrDefault(0)
                             inserting = false
                             Toast.makeText(
                                 context,
@@ -128,20 +127,27 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 }
 
+/** "Insert mock data" with one chip per language version of the sample trip. */
 @Composable
-private fun ActionRow(title: String, subtitle: String, enabled: Boolean, onClick: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-    ) {
-        Text(
-            title,
-            fontSize = 17.sp,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun MockDataRow(enabled: Boolean, onInsert: (AppLanguage) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
+        Text(stringResource(R.string.settings_insert_mock), fontSize = 17.sp, color = colors.onSurface)
+        Text(stringResource(R.string.settings_insert_mock_hint), fontSize = 12.sp, color = colors.onSurfaceVariant)
+        Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            AppLanguage.entries.forEach { option ->
+                Surface(
+                    onClick = { onInsert(option) },
+                    enabled = enabled,
+                    shape = CircleShape,
+                    color = colors.surfaceContainerLowest,
+                    contentColor = if (enabled) colors.onSurface else colors.onSurfaceVariant,
+                    border = BorderStroke(1.dp, colors.outlineVariant),
+                ) {
+                    Text(option.nativeName, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
+                }
+            }
+        }
     }
 }
 

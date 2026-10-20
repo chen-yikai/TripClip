@@ -72,9 +72,15 @@ fun AboutSection(modifier: Modifier = Modifier) {
 
 Debug 版本可以載入一組台北旅遊的範例照片：
 
-**設定 → 開發者 → 插入測試資料**
+**設定 → 開發者 → 插入測試資料**，再選擇「繁體中文」「English」或「日本語」。再選另一種語言會把已插入的測試資料換成該語言，不會重複新增。
 
-範例照片與資料放在 `app/src/debug/assets/mock/`（`mock_photos.json`），只會包含在 debug 版本中。
+範例照片與資料放在 `app/src/debug/assets/mock/`，只會包含在 debug 版本中：
+
+- `mock_photos.json`：繁體中文
+- `mock_photos_en.json`：English
+- `mock_photos_ja.json`：日本語
+
+三個檔案的照片、時間與 GPS 都相同，只有地點名稱（`placeName`）與心得（`note`）不同。
 
 ## 專案結構
 

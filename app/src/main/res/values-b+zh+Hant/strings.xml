@@ -34,7 +34,7 @@
     <!-- Settings: developer (debug builds only) -->
     <string name="settings_developer">開發者</string>
     <string name="settings_insert_mock">插入測試資料</string>
-    <string name="settings_insert_mock_hint">台北旅遊的範例照片</string>
+    <string name="settings_insert_mock_hint">台北旅遊的範例照片，選擇心得與地點的語言</string>
     <string name="settings_insert_mock_done">已加入 %d 張照片</string>
 
     <!-- Photo viewer -->

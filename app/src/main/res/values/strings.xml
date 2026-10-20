@@ -42,7 +42,7 @@
     <!-- Settings: developer (debug builds only) -->
     <string name="settings_developer">Developer</string>
     <string name="settings_insert_mock">Insert mock data</string>
-    <string name="settings_insert_mock_hint">Sample photos from a Taipei trip</string>
+    <string name="settings_insert_mock_hint">Sample photos from a Taipei trip, in the language you pick</string>
     <string name="settings_insert_mock_done">Added %d photos</string>
 
     <!-- Photo viewer -->

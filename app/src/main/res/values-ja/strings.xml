@@ -34,7 +34,7 @@
     <!-- Settings: developer (debug builds only) -->
     <string name="settings_developer">開発者</string>
     <string name="settings_insert_mock">テストデータを追加</string>
-    <string name="settings_insert_mock_hint">台北旅行のサンプル写真</string>
+    <string name="settings_insert_mock_hint">台北旅行のサンプル写真。ひとことと場所の言語を選んでください</string>
     <string name="settings_insert_mock_done">%d 枚の写真を追加しました</string>
 
     <!-- Photo viewer -->
