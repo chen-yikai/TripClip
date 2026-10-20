@@ -62,15 +62,14 @@ fun TripClipNavDisplay() {
                 // The camera is always shown on a dark background.
                 TripClipTheme(darkTheme = true) {
                     CameraScreen(
-                        // After shooting, land on the journal at the last shot; otherwise just go back.
-                        onClose = { last ->
-                            if (last == null) navigator.back()
-                            else navigator.showJournal(
-                                Instant.ofEpochMilli(last.takenAt).atZone(ZoneId.systemDefault()).toLocalDate(),
-                                last.uri,
+                        onClose = navigator::back,
+                        // A confirmed shot flies into its spot in the journal.
+                        onPhotoTaken = { photo ->
+                            navigator.showJournal(
+                                Instant.ofEpochMilli(photo.takenAt).atZone(ZoneId.systemDefault()).toLocalDate(),
+                                photo.uri,
                             )
                         },
-                        onOpenPhoto = { id, uri -> navigator.openEditNoteAfterCapture(id, uri) },
                     )
                 }
             }

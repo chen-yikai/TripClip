@@ -1,5 +1,6 @@
 package edu.saihs.tripclip.ui.camera
 
+import android.content.ContentResolver
 import android.location.Location
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -8,47 +9,46 @@ import edu.saihs.tripclip.data.LocationRepository
 import edu.saihs.tripclip.data.Photo
 import edu.saihs.tripclip.data.PhotoRepository
 import edu.saihs.tripclip.data.Place
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** A shot that's been taken and saved to the gallery, waiting for retake or confirm. */
+data class PendingShot(
+    val uri: Uri,
+    val takenAt: Long,
+    val latitude: Double?,
+    val longitude: Double?,
+    val placeName: String?,
+)
 
 data class CameraUiState(
     val locating: Boolean = false,
     val location: Location? = null,
     val place: Place? = null,
-    /** The most recent photo taken in this camera session. */
-    val lastPhoto: Photo? = null,
     val capturing: Boolean = false,
     val useFrontCamera: Boolean = false,
     val flashOn: Boolean = false,
+    /** Shown frozen in the viewfinder until retaken or confirmed. */
+    val pending: PendingShot? = null,
+    /** Set once the pending shot is confirmed and stored; the screen then flies it into the journal. */
+    val stored: Photo? = null,
 )
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CameraViewModel(
     private val photos: PhotoRepository,
     private val locations: LocationRepository,
+    private val contentResolver: ContentResolver,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CameraUiState())
     val uiState: StateFlow<CameraUiState> = _uiState.asStateFlow()
-
-    private val lastPhotoId = MutableStateFlow<Long?>(null)
-
-    init {
-        // Follow the stored row so a retaken (deleted) photo disappears from the thumbnail.
-        viewModelScope.launch {
-            lastPhotoId
-                .flatMapLatest { id -> if (id == null) flowOf(null) else photos.observePhoto(id) }
-                .collect { photo -> _uiState.update { it.copy(lastPhoto = photo) } }
-        }
-    }
 
     private var locationJob: Job? = null
 
@@ -89,21 +89,51 @@ class CameraViewModel(
 
     fun onCaptureFailed() = _uiState.update { it.copy(capturing = false) }
 
-    /** Stores a photo the camera just saved to [uri]; it becomes the corner thumbnail. The camera stays open. */
-    fun onCaptured(uri: Uri, takenAt: Long) {
-        val state = _uiState.value
+    /** The camera saved a shot to [uri]: hold it for review, with where it was taken. */
+    fun onCaptured(uri: Uri, takenAt: Long) = _uiState.update {
+        it.copy(
+            capturing = false,
+            pending = PendingShot(uri, takenAt, it.location?.latitude, it.location?.longitude, it.place?.name),
+        )
+    }
+
+    /** Throws the pending shot away (also deletes the image the camera saved) and returns to live. */
+    fun retake() {
+        val shot = _uiState.value.pending ?: return
+        _uiState.update { it.copy(pending = null) }
+        viewModelScope.launch { deleteImage(shot.uri) }
+    }
+
+    /** Adds the pending shot to the journal; [CameraUiState.stored] is set when done. */
+    fun confirm() {
+        val shot = _uiState.value.pending ?: return
+        if (_uiState.value.stored != null) return
         viewModelScope.launch {
             val photo = Photo(
-                uri = uri.toString(),
-                takenAt = takenAt,
-                latitude = state.location?.latitude,
-                longitude = state.location?.longitude,
-                placeName = state.place?.name,
+                uri = shot.uri.toString(),
+                takenAt = shot.takenAt,
+                latitude = shot.latitude,
+                longitude = shot.longitude,
+                placeName = shot.placeName,
             )
             val id = photos.addPhoto(photo)
-            lastPhotoId.value = id
-            _uiState.update { it.copy(capturing = false) }
+            _uiState.update { it.copy(stored = photo.copy(id = id)) }
         }
+    }
+
+    /** Leaving with an unconfirmed shot: don't keep it in the gallery. */
+    fun discardPending() {
+        val shot = _uiState.value.pending ?: return
+        if (_uiState.value.stored != null) return
+        _uiState.update { it.copy(pending = null) }
+        // Not tied to viewModelScope: it's cancelled as the screen goes away.
+        val uri = shot.uri
+        Thread { runCatching { contentResolver.delete(uri, null, null) } }.start()
+    }
+
+    private suspend fun deleteImage(uri: Uri) = withContext(Dispatchers.IO) {
+        // The app created this MediaStore entry, so it may delete it without asking.
+        runCatching { contentResolver.delete(uri, null, null) }
     }
 
     private companion object {

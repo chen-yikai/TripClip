@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -39,6 +40,8 @@ fun Polaroid(
     onClick: (() -> Unit)? = null,
     /** Morphs this polaroid (and its shadow) to/from one with the same id on the next/previous screen. */
     sharedPhotoId: Long? = null,
+    /** Replaces the photo of [model] (e.g. a live camera preview); laid out in the same photo area. */
+    photo: (@Composable () -> Unit)? = null,
     caption: @Composable ColumnScope.() -> Unit = {},
 ) {
     val shape = RoundedCornerShape(2.dp)
@@ -46,15 +49,20 @@ fun Polaroid(
         .rotate(tiltDegrees)
     val content: @Composable () -> Unit = {
         Column(Modifier.padding(start = border, end = border, top = border)) {
-            AsyncImage(
-                model = model,
-                contentDescription = contentDescription,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(photoAspectRatio)
-                    .background(PhotoPlaceholder),
-            )
+            val photoArea = Modifier
+                .fillMaxWidth()
+                .aspectRatio(photoAspectRatio)
+                .background(PhotoPlaceholder)
+            if (photo != null) {
+                Box(photoArea.clipToBounds()) { photo() }
+            } else {
+                AsyncImage(
+                    model = model,
+                    contentDescription = contentDescription,
+                    contentScale = ContentScale.Crop,
+                    modifier = photoArea,
+                )
+            }
             Column(Modifier.padding(vertical = border), content = caption)
         }
     }

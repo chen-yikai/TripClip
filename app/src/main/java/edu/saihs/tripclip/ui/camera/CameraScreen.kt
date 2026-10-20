@@ -15,6 +15,13 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -24,6 +31,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +39,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -50,15 +59,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -82,11 +96,16 @@ import edu.saihs.tripclip.ui.theme.PolaroidFrame
 import edu.saihs.tripclip.ui.theme.PolaroidInk
 import edu.saihs.tripclip.ui.theme.handwritingFontFamily
 import edu.saihs.tripclip.ui.tripClipViewModel
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -97,11 +116,12 @@ private const val ViewfinderRatio = 3f / 4f
 /** How long the torch stays on before the shot, so auto-exposure and focus adapt to the light. */
 private const val TorchSettleMillis = 450L
 
-// The journal list's polaroid (JournalScreen.JournalPolaroid): the corner thumbnail is that frame scaled down.
+// The journal list's polaroid (JournalScreen.JournalPolaroid); the viewfinder is that frame scaled up.
 private val JournalPolaroidWidth = 170.dp
 private val JournalPolaroidBorder = 10.dp
 private val JournalCaptionMinHeight = 68.dp
-private val ThumbnailWidth = 56.dp
+private const val JournalPhotoAspect = 1.08f
+private val ClockFormat = DateTimeFormatter.ofPattern("HH:mm")
 
 private val CameraPermissions = arrayOf(
     Manifest.permission.CAMERA,
@@ -112,19 +132,28 @@ private val CameraPermissions = arrayOf(
 private val CameraBackground = Color(0xFF070708)
 
 /**
- * 拍照記錄. Stays open for shot after shot; each one becomes the corner thumbnail, which opens the
- * note editor. Closing reports the last photo taken (if any) so the journal can show it.
+ * 拍照記錄. The viewfinder is the journal's polaroid frame, scaled up. A shot freezes in it for review:
+ * retake (bottom left) or confirm (✓, where the shutter was). Confirming adds it to the journal and the
+ * polaroid flies from the viewfinder into its spot in the list ([onPhotoTaken]).
  */
 @Composable
 fun CameraScreen(
-    onClose: (lastPhoto: Photo?) -> Unit,
-    onOpenPhoto: (id: Long, uri: String) -> Unit,
+    onClose: () -> Unit,
+    onPhotoTaken: (Photo) -> Unit,
 ) {
     val context = LocalContext.current
-    val viewModel = tripClipViewModel { app -> CameraViewModel(app.photoRepository, app.locationRepository) }
+    val viewModel = tripClipViewModel { app ->
+        CameraViewModel(app.photoRepository, app.locationRepository, app.contentResolver)
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val close = { onClose(state.lastPhoto) }
-    BackHandler(onBack = close)
+    val reviewing = state.pending != null
+    // Closing with an unconfirmed shot throws it away.
+    val close = {
+        viewModel.discardPending()
+        onClose()
+    }
+    // Back while reviewing means "retake"; otherwise it closes the camera.
+    BackHandler(onBack = { if (reviewing && state.stored == null) viewModel.retake() else close() })
 
     // Shutter feedback: a quick white flash over the viewfinder.
     val flash = remember { Animatable(0f) }
@@ -133,6 +162,15 @@ fun CameraScreen(
         if (shots == 0) return@LaunchedEffect
         flash.snapTo(0.75f)
         flash.animateTo(0f, tween(260))
+    }
+
+    // Confirmed and stored: turn the frame to the tilt the photo has in the journal, then fly it there
+    // (the frame now carries the photo's shared-element key).
+    val tilt = remember { Animatable(0f) }
+    LaunchedEffect(state.stored) {
+        val photo = state.stored ?: return@LaunchedEffect
+        tilt.animateTo(polaroidTilt(photo.id), tween(220))
+        onPhotoTaken(photo)
     }
 
     fun hasCamera() = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
@@ -169,14 +207,20 @@ fun CameraScreen(
         val failedText = stringResource(R.string.camera_failed)
         val scope = rememberCoroutineScope()
 
+        PlaceLine(
+            when {
+                state.place != null -> state.place?.label()
+                state.locating -> stringResource(R.string.camera_locating)
+                else -> stringResource(R.string.camera_no_location)
+            }
+        )
+
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Viewfinder(
+            ViewfinderPolaroid(
                 controller = controller,
-                placeLabel = when {
-                    state.place != null -> state.place?.label()
-                    state.locating -> stringResource(R.string.camera_locating)
-                    else -> stringResource(R.string.camera_no_location)
-                },
+                pending = state.pending,
+                stored = state.stored,
+                tilt = tilt.value,
                 flashAlpha = { flash.value },
             )
         }
@@ -188,34 +232,33 @@ fun CameraScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+            // Bottom left: retake, while a shot is being reviewed.
             Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
-                state.lastPhoto?.let { photo ->
-                    // Pops in each time a new shot lands; tap to add a note (morphs into the editor).
-                    val pop = remember { Animatable(1f) }
-                    LaunchedEffect(photo.id) {
-                        pop.snapTo(0.5f)
-                        pop.animateTo(1f, spring(dampingRatio = 0.45f, stiffness = 500f))
-                    }
-                    // A scaled-down copy of the journal's polaroid (same border, photo ratio and caption
-                    // area), so it morphs cleanly into its spot in the list when the camera closes.
-                    val k = ThumbnailWidth / JournalPolaroidWidth
-                    Polaroid(
-                        model = photo.uri,
-                        tiltDegrees = polaroidTilt(photo.id),
-                        border = JournalPolaroidBorder * k,
-                        contentDescription = stringResource(R.string.camera_last_photo),
-                        onClick = { onOpenPhoto(photo.id, photo.uri) },
-                        sharedPhotoId = photo.id,
-                        modifier = Modifier
-                            .width(ThumbnailWidth)
-                            .graphicsLayer {
-                                scaleX = pop.value
-                                scaleY = pop.value
-                            },
-                    ) { Spacer(Modifier.height(JournalCaptionMinHeight * k)) }
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = reviewing && state.stored == null,
+                    enter = fadeIn() + scaleIn(initialScale = 0.7f),
+                    exit = fadeOut() + scaleOut(targetScale = 0.7f),
+                ) {
+                    RoundIconButton(
+                        painter = painterResource(R.drawable.ic_retake),
+                        contentDescription = stringResource(R.string.note_retake),
+                        onClick = viewModel::retake,
+                        size = 56.dp,
+                    )
                 }
             }
-            ShutterButton(
+            // Centre: the shutter, which becomes ✓ (add to the journal) while reviewing.
+            AnimatedContent(
+                targetState = reviewing,
+                transitionSpec = {
+                    (fadeIn(tween(180)) + scaleIn(tween(180), initialScale = 0.8f)) togetherWith
+                        (fadeOut(tween(120)) + scaleOut(tween(120), targetScale = 0.8f))
+                },
+                label = "shutter",
+            ) { review ->
+                if (review) {
+                    ConfirmButton(enabled = state.stored == null, onClick = viewModel::confirm)
+                } else ShutterButton(
                 enabled = camera.ready && !state.capturing,
                 onClick = {
                     shots++
@@ -242,12 +285,59 @@ fun CameraScreen(
                     }
                 },
             )
-            RoundIconButton(
-                painter = painterResource(R.drawable.ic_flip_camera),
-                contentDescription = stringResource(R.string.camera_switch),
-                onClick = viewModel::switchCamera,
-                size = 56.dp,
-            )
+            }
+            // Right: switch camera (hidden while reviewing).
+            Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = !reviewing,
+                    enter = fadeIn() + scaleIn(initialScale = 0.7f),
+                    exit = fadeOut() + scaleOut(targetScale = 0.7f),
+                ) {
+                    RoundIconButton(
+                        painter = painterResource(R.drawable.ic_flip_camera),
+                        contentDescription = stringResource(R.string.camera_switch),
+                        onClick = viewModel::switchCamera,
+                        size = 56.dp,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Where the camera thinks you are, above the viewfinder. */
+@Composable
+private fun PlaceLine(label: String?) {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(R.drawable.ic_location), null, Modifier.size(14.dp), tint = Color.White.copy(alpha = 0.7f))
+        Spacer(Modifier.width(5.dp))
+        Text(
+            label.orEmpty(),
+            color = Color.White.copy(alpha = 0.8f),
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** ✓: adds the reviewed shot to the journal. Same size and colours as the shutter. */
+@Composable
+private fun ConfirmButton(enabled: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = CircleShape,
+        color = PolaroidFrame,
+        contentColor = PolaroidInk,
+        modifier = Modifier.size(84.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(painterResource(R.drawable.ic_check), stringResource(R.string.note_save), Modifier.size(36.dp))
         }
     }
 }
@@ -360,19 +450,80 @@ private fun CameraTopBar(flashOn: Boolean, onClose: () -> Unit, onToggleFlash: (
     }
 }
 
+/**
+ * The viewfinder: exactly the journal list's polaroid (JournalScreen.JournalPolaroid), scaled to fit —
+ * same border, 1.08 photo, caption area and handwritten time — with the live preview as its photo.
+ * A [pending] shot freezes in it; once [stored] it carries the photo's shared-element key so it can
+ * fly into the list.
+ */
 @Composable
-private fun Viewfinder(controller: LifecycleCameraController, placeLabel: String?, flashAlpha: () -> Float) {
+private fun ViewfinderPolaroid(
+    controller: LifecycleCameraController,
+    pending: PendingShot?,
+    stored: Photo?,
+    tilt: Float,
+    flashAlpha: () -> Float,
+) {
+    val hand = handwritingFontFamily()
+    val now by produceState(LocalTime.now()) {
+        while (true) {
+            value = LocalTime.now()
+            delay(1_000)
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 28.dp, vertical = 12.dp), contentAlignment = Alignment.Center) {
+        // The journal polaroid's height / width (borders, 1.08 photo, minimum caption), so it fits either way.
+        val b = JournalPolaroidBorder / JournalPolaroidWidth
+        val heightRatio = 3 * b + (1 - 2 * b) / JournalPhotoAspect + JournalCaptionMinHeight / JournalPolaroidWidth
+        val width = minOf(maxWidth, maxHeight / heightRatio)
+        val k = width / JournalPolaroidWidth
+        // Keep the live preview under the frozen shot until it has loaded, so there's no flash of grey.
+        var shotLoaded by remember(pending?.uri) { mutableStateOf(false) }
+        Polaroid(
+            model = null,
+            tiltDegrees = tilt,
+            photoAspectRatio = JournalPhotoAspect,
+            border = JournalPolaroidBorder * k,
+            sharedPhotoId = stored?.id,
+            modifier = Modifier.width(width),
+            photo = {
+                if (pending == null || !shotLoaded) PreviewArea(controller, flashAlpha, Modifier.fillMaxSize())
+                if (pending != null) {
+                    AsyncImage(
+                        model = pending.uri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        onSuccess = { shotLoaded = true },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            },
+        ) {
+            val time = pending?.let { Instant.ofEpochMilli(it.takenAt).atZone(ZoneId.systemDefault()).toLocalTime() } ?: now
+            // Same caption as the list: the time in handwriting, scaled with the frame.
+            Column(Modifier.heightIn(min = JournalCaptionMinHeight * k)) {
+                Text(
+                    time.format(ClockFormat),
+                    style = TextStyle(fontFamily = hand, fontSize = 16.sp * k, color = PolaroidInk.copy(alpha = 0.6f)),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PreviewArea(controller: LifecycleCameraController, flashAlpha: () -> Float, modifier: Modifier) {
     Box(
-        Modifier
-            .padding(horizontal = 24.dp)
-            .aspectRatio(ViewfinderRatio, matchHeightConstraintsFirst = true)
-            .clip(RoundedCornerShape(4.dp))
+        modifier
+            .clip(RoundedCornerShape(1.dp))
             .background(Color.Black)
     ) {
         AndroidView(
             factory = { ctx ->
                 PreviewView(ctx).apply {
                     scaleType = PreviewView.ScaleType.FILL_CENTER
+                    // TextureView-based, so it draws correctly inside Compose layers (frame, clip, tilt).
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                     this.controller = controller
                 }
             },
@@ -387,21 +538,6 @@ private fun Viewfinder(controller: LifecycleCameraController, placeLabel: String
                 val y = size.height * i / 3
                 drawLine(line, Offset(x, 0f), Offset(x, size.height), stroke)
                 drawLine(line, Offset(0f, y), Offset(size.width, y), stroke)
-            }
-        }
-        if (placeLabel != null) {
-            Row(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(12.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.55f))
-                    .padding(horizontal = 12.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(painterResource(R.drawable.ic_location), null, Modifier.size(16.dp), tint = Color.White)
-                Spacer(Modifier.width(6.dp))
-                Text(placeLabel, color = Color.White, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         // Shutter flash.
