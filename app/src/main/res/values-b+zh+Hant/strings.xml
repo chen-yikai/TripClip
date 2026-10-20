@@ -111,6 +111,7 @@
     <string name="collage_show_note">心得</string>
     <string name="collage_save">存到相簿</string>
     <string name="collage_share">分享到限動</string>
+    <string name="collage_share_only">分享</string>
     <string name="collage_saved">已存到相簿</string>
     <string name="collage_save_failed">儲存失敗</string>
     <string name="collage_shuffle">重新排列</string>

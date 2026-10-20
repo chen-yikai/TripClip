@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -219,9 +220,21 @@ fun DailyCollageScreen(date: LocalDate, onBack: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
                 modifier = Modifier.weight(1f).height(54.dp),
             ) {
-                Icon(painterResource(R.drawable.ic_share), null, Modifier.size(20.dp))
+                Icon(painterResource(R.drawable.ic_instagram), null, Modifier.size(20.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.collage_share), fontWeight = FontWeight.Bold)
+            }
+            // Share only: the system share sheet (any app), without saving to the gallery.
+            OutlinedButton(
+                onClick = { export { bitmap -> CollageExporter.share(context, bitmap) } },
+                enabled = enabled,
+                shape = CircleShape,
+                border = BorderStroke(1.dp, colors.outline),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onBackground),
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.size(54.dp),
+            ) {
+                Icon(painterResource(R.drawable.ic_share), stringResource(R.string.collage_share_only), Modifier.size(22.dp))
             }
         }
     }

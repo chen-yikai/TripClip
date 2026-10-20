@@ -123,6 +123,7 @@
     <string name="collage_show_note">Note</string>
     <string name="collage_save">Save to gallery</string>
     <string name="collage_share">Share to Story</string>
+    <string name="collage_share_only">Share</string>
     <string name="collage_saved">Saved to gallery</string>
     <string name="collage_save_failed">Couldn\'t save the image</string>
     <string name="collage_shuffle">Shuffle</string>

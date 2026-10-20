@@ -1,6 +1,7 @@
 package edu.saihs.tripclip.ui.collage
 
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -40,14 +41,37 @@ object CollageExporter {
         uri
     }
 
+    /** Opens the system share sheet with the collage (any app); nothing is saved to the gallery. */
+    suspend fun share(context: Context, bitmap: Bitmap) {
+        val uri = writeShareFile(context, bitmap, "tripclip_collage.jpg")
+        openShareSheet(context, uri)
+    }
+
+    /**
+     * The system share sheet for an image. The uri also goes in as ClipData (with read permission),
+     * which is what makes the share sheet show the image preview at the top.
+     */
+    private fun openShareSheet(context: Context, uri: Uri) {
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "image/jpeg"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newRawUri(null, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
+    /** Writes the collage to the shared cache folder (see file_paths.xml) and returns its FileProvider uri. */
+    private suspend fun writeShareFile(context: Context, bitmap: Bitmap, name: String): Uri = withContext(Dispatchers.IO) {
+        val dir = File(context.cacheDir, "shared").apply { mkdirs() }
+        val file = File(dir, name)
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    }
+
     /** Opens Instagram's "add to story" with the collage, or the system share sheet if Instagram is missing. */
     suspend fun shareToStory(context: Context, bitmap: Bitmap): Boolean {
-        val uri = withContext(Dispatchers.IO) {
-            val dir = File(context.cacheDir, "shared").apply { mkdirs() }
-            val file = File(dir, "tripclip_story.jpg")
-            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        }
+        val uri = writeShareFile(context, bitmap, "tripclip_story.jpg")
         val story = Intent(INSTAGRAM_STORY_ACTION).apply {
             setDataAndType(uri, "image/jpeg")
             setPackage(INSTAGRAM_PACKAGE)
@@ -59,12 +83,7 @@ object CollageExporter {
             context.startActivity(story)
             true
         } catch (_: ActivityNotFoundException) {
-            val send = Intent(Intent.ACTION_SEND).apply {
-                type = "image/jpeg"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            openShareSheet(context, uri)
             true
         }
     }

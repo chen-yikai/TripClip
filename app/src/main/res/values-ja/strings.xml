@@ -111,6 +111,7 @@
     <string name="collage_show_note">ひとこと</string>
     <string name="collage_save">アルバムに保存</string>
     <string name="collage_share">ストーリーズでシェア</string>
+    <string name="collage_share_only">シェア</string>
     <string name="collage_saved">アルバムに保存しました</string>
     <string name="collage_save_failed">保存できませんでした</string>
     <string name="collage_shuffle">シャッフル</string>
