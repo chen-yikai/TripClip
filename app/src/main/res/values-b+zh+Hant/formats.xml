@@ -1,0 +1,5 @@
+<resources>
+    <string name="journal_date_pattern" translatable="false">MM/dd E</string>
+    <string name="calendar_month_pattern" translatable="false">yyyy 年 M 月</string>
+    <string name="note_datetime_pattern" translatable="false">yyyy 年 M 月 d 日 E・a h:mm</string>
+</resources>

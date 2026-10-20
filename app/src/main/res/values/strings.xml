@@ -1,0 +1,139 @@
+<resources>
+    <string name="app_name" translatable="false">TripClip</string>
+
+    <!-- Common -->
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <!-- Joins place names, e.g. "A, B" -->
+    <string name="list_separator">", "</string>
+
+    <!-- Journal -->
+    <string name="journal_open_calendar">Calendar</string>
+    <string name="journal_open_settings">Settings</string>
+    <string name="journal_today">Today</string>
+    <string name="journal_yesterday">Yesterday</string>
+    <!-- java.time pattern for the day header, e.g. "10/19 Mon" -->
+    <string name="journal_date_pattern" translatable="false">MM/dd E</string>
+    <string name="journal_group_by_place">Place</string>
+    <string name="journal_group_by_time">Time</string>
+    <string name="journal_make_collage">Daily collage</string>
+    <string name="journal_add_photos">Add photos</string>
+    <string name="journal_unknown_place">Unknown place</string>
+    <string name="journal_empty_title">No photos on this day yet</string>
+    <string name="journal_empty_hint">Tap + to add some</string>
+    <plurals name="photo_count">
+        <item quantity="one">%d photo</item>
+        <item quantity="other">%d photos</item>
+    </plurals>
+    <plurals name="photo_count_short">
+        <item quantity="one">%d photo</item>
+        <item quantity="other">%d photos</item>
+    </plurals>
+    <plurals name="picker_recent_days">
+        <item quantity="one">Last %d day</item>
+        <item quantity="other">Last %d days</item>
+    </plurals>
+
+    <!-- Photo picker -->
+    <string name="picker_title">Recent photos</string>
+
+    <string name="calendar_go_today">Go to today</string>
+
+    <!-- Settings: developer (debug builds only) -->
+    <string name="settings_developer">Developer</string>
+    <string name="settings_insert_mock">Insert mock data</string>
+    <string name="settings_insert_mock_hint">Sample photos from a Taipei trip</string>
+    <string name="settings_insert_mock_done">Added %d photos</string>
+
+    <!-- Photo viewer -->
+    <string name="viewer_edit">Edit note</string>
+    <string name="viewer_counter" translatable="false">%1$d / %2$d</string>
+    <string name="picker_subtitle">Gallery · by capture time</string>
+    <string name="picker_add">Add %d</string>
+    <string name="picker_open_camera">Take a photo</string>
+
+    <!-- Camera -->
+    <string name="camera_title">Camera</string>
+
+    <!-- Edit note -->
+    <string name="note_title">Write a note</string>
+    <string name="note_photo_label">Photo #%d</string>
+
+    <!-- Daily collage -->
+    <string name="collage_title">Daily collage</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">Pick a date</string>
+    <string name="calendar_view_day">View this day</string>
+    <!-- java.time pattern for the month header -->
+    <string name="calendar_month_pattern" translatable="false">MMMM yyyy</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_about">About</string>
+    <string name="language_name_zh_tw">Traditional Chinese</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_ja">Japanese</string>
+    <string name="group_subtitle">%1$s · %2$s</string>
+
+    <!-- Common (2) -->
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Photo picker (2) -->
+    <string name="picker_all_albums">All albums</string>
+    <string name="picker_permission_title">Allow access to your photos</string>
+    <string name="picker_permission_body">TripClip lists your recent photos so you can add them to your journey.</string>
+    <string name="picker_permission_grant">Allow</string>
+    <string name="picker_select_more">Select more photos</string>
+    <string name="picker_empty">No recent photos</string>
+    <string name="picker_select">Select photo</string>
+
+    <!-- Camera (2) -->
+    <string name="camera_flash">Flash</string>
+    <string name="camera_switch">Switch camera</string>
+    <string name="camera_shutter">Take photo</string>
+    <string name="camera_last_photo">Last photo</string>
+    <string name="camera_locating">Locating…</string>
+    <string name="camera_no_location">Location unavailable</string>
+    <string name="camera_permission_body">TripClip needs camera access to take photos.</string>
+    <string name="camera_permission_grant">Allow camera</string>
+    <string name="camera_failed">Couldn\'t take the photo</string>
+
+    <!-- Edit note (2) -->
+    <string name="note_label">Note for this moment</string>
+    <string name="note_placeholder">Write a line…</string>
+    <string name="note_counter">%1$d / %2$d</string>
+    <string name="note_retake">Retake</string>
+    <string name="note_save">Add to journey</string>
+    <string name="note_delete">Delete photo</string>
+    <string name="note_delete_title">Delete this photo?</string>
+    <string name="note_delete_body">It will be removed from your journey. The original stays in your gallery.</string>
+    <string name="note_datetime_pattern" translatable="false">EEE, MMM d, yyyy · h:mm a</string>
+
+    <!-- Daily collage (2) -->
+    <string name="collage_output_hint">1080 × 1920 · for Instagram Stories</string>
+    <string name="collage_layout">Layout</string>
+    <string name="collage_layout_scatter">Scattered</string>
+    <string name="collage_layout_grid">Grid</string>
+    <string name="collage_layout_film">Film strip</string>
+    <string name="collage_show_place">Place</string>
+    <string name="collage_show_time">Time</string>
+    <string name="collage_show_note">Note</string>
+    <string name="collage_save">Save to gallery</string>
+    <string name="collage_share">Share to Story</string>
+    <string name="collage_saved">Saved to gallery</string>
+    <string name="collage_save_failed">Couldn\'t save the image</string>
+    <string name="collage_shuffle">Shuffle</string>
+    <string name="collage_empty">No photos on this day</string>
+    <plurals name="place_count">
+        <item quantity="one">%d place</item>
+        <item quantity="other">%d places</item>
+    </plurals>
+
+    <!-- Calendar (2) -->
+    <string name="calendar_prev_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_no_photos">No photos</string>
+</resources>

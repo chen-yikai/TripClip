@@ -1,0 +1,126 @@
+<resources>
+    <!-- Common -->
+    <string name="action_back">返回</string>
+    <string name="action_close">關閉</string>
+    <string name="list_separator">、</string>
+
+    <!-- Journal -->
+    <string name="journal_open_calendar">月曆</string>
+    <string name="journal_open_settings">設定</string>
+    <string name="journal_today">今天</string>
+    <string name="journal_yesterday">昨天</string>
+    <string name="journal_group_by_place">地點</string>
+    <string name="journal_group_by_time">時段</string>
+    <string name="journal_make_collage">合成今日</string>
+    <string name="journal_add_photos">新增照片</string>
+    <string name="journal_unknown_place">未知地點</string>
+    <string name="journal_empty_title">這天還沒有照片</string>
+    <string name="journal_empty_hint">按 ＋ 新增照片</string>
+    <plurals name="photo_count">
+        <item quantity="other">%d 張照片</item>
+    </plurals>
+    <plurals name="photo_count_short">
+        <item quantity="other">%d 張</item>
+    </plurals>
+    <plurals name="picker_recent_days">
+        <item quantity="other">最近 %d 天</item>
+    </plurals>
+
+    <!-- Photo picker -->
+    <string name="picker_title">最近的照片</string>
+
+    <string name="calendar_go_today">回到今天</string>
+
+    <!-- Settings: developer (debug builds only) -->
+    <string name="settings_developer">開發者</string>
+    <string name="settings_insert_mock">插入測試資料</string>
+    <string name="settings_insert_mock_hint">台北旅遊的範例照片</string>
+    <string name="settings_insert_mock_done">已加入 %d 張照片</string>
+
+    <!-- Photo viewer -->
+    <string name="viewer_edit">編輯心得</string>
+    <string name="picker_subtitle">系統相簿・依拍攝時間</string>
+    <string name="picker_add">加入 %d</string>
+    <string name="picker_open_camera">拍照</string>
+
+    <!-- Camera -->
+    <string name="camera_title">拍照</string>
+
+    <!-- Edit note -->
+    <string name="note_title">寫下心得</string>
+    <string name="note_photo_label">照片 #%d</string>
+
+    <!-- Daily collage -->
+    <string name="collage_title">每日拼貼</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">選擇日期</string>
+    <string name="calendar_view_day">查看這天</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <string name="settings_language">語言</string>
+    <string name="settings_about">關於</string>
+    <string name="language_name_zh_tw">繁體中文</string>
+    <string name="language_name_en">英文</string>
+    <string name="language_name_ja">日文</string>
+    <string name="group_subtitle">%1$s・%2$s</string>
+
+    <!-- Common (2) -->
+    <string name="action_delete">刪除</string>
+    <string name="action_cancel">取消</string>
+
+    <!-- Photo picker (2) -->
+    <string name="picker_all_albums">全部相簿</string>
+    <string name="picker_permission_title">允許存取相簿</string>
+    <string name="picker_permission_body">TripClip 會列出你最近拍的照片，方便加入旅程。</string>
+    <string name="picker_permission_grant">允許</string>
+    <string name="picker_select_more">選取更多照片</string>
+    <string name="picker_empty">最近沒有照片</string>
+    <string name="picker_select">選取照片</string>
+
+    <!-- Camera (2) -->
+    <string name="camera_flash">閃光燈</string>
+    <string name="camera_switch">切換鏡頭</string>
+    <string name="camera_shutter">拍照</string>
+    <string name="camera_last_photo">上一張照片</string>
+    <string name="camera_locating">定位中…</string>
+    <string name="camera_no_location">無法取得位置</string>
+    <string name="camera_permission_body">需要相機權限才能拍照。</string>
+    <string name="camera_permission_grant">允許相機</string>
+    <string name="camera_failed">拍照失敗</string>
+
+    <!-- Edit note (2) -->
+    <string name="note_label">這一刻的心得</string>
+    <string name="note_placeholder">寫一句話…</string>
+    <string name="note_counter">%1$d / %2$d</string>
+    <string name="note_retake">重拍</string>
+    <string name="note_save">收進旅程</string>
+    <string name="note_delete">刪除照片</string>
+    <string name="note_delete_title">刪除這張照片？</string>
+    <string name="note_delete_body">照片會從旅程中移除，原始檔仍保留在相簿。</string>
+
+    <!-- Daily collage (2) -->
+    <string name="collage_output_hint">1080 × 1920・適用 IG 限時動態</string>
+    <string name="collage_layout">版型</string>
+    <string name="collage_layout_scatter">散落拍立得</string>
+    <string name="collage_layout_grid">整齊格狀</string>
+    <string name="collage_layout_film">底片膠捲</string>
+    <string name="collage_show_place">地點</string>
+    <string name="collage_show_time">時間</string>
+    <string name="collage_show_note">心得</string>
+    <string name="collage_save">存到相簿</string>
+    <string name="collage_share">分享到限動</string>
+    <string name="collage_saved">已存到相簿</string>
+    <string name="collage_save_failed">儲存失敗</string>
+    <string name="collage_shuffle">重新排列</string>
+    <string name="collage_empty">這天沒有照片</string>
+    <plurals name="place_count">
+        <item quantity="other">%d 個地點</item>
+    </plurals>
+
+    <!-- Calendar (2) -->
+    <string name="calendar_prev_month">上個月</string>
+    <string name="calendar_next_month">下個月</string>
+    <string name="calendar_no_photos">沒有照片</string>
+</resources>

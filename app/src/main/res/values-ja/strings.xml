@@ -1,0 +1,126 @@
+<resources>
+    <!-- Common -->
+    <string name="action_back">戻る</string>
+    <string name="action_close">閉じる</string>
+    <string name="list_separator">、</string>
+
+    <!-- Journal -->
+    <string name="journal_open_calendar">カレンダー</string>
+    <string name="journal_open_settings">設定</string>
+    <string name="journal_today">今日</string>
+    <string name="journal_yesterday">昨日</string>
+    <string name="journal_group_by_place">場所</string>
+    <string name="journal_group_by_time">時間帯</string>
+    <string name="journal_make_collage">今日のコラージュ</string>
+    <string name="journal_add_photos">写真を追加</string>
+    <string name="journal_unknown_place">不明な場所</string>
+    <string name="journal_empty_title">この日の写真はまだありません</string>
+    <string name="journal_empty_hint">＋ で写真を追加</string>
+    <plurals name="photo_count">
+        <item quantity="other">写真 %d 枚</item>
+    </plurals>
+    <plurals name="photo_count_short">
+        <item quantity="other">%d 枚</item>
+    </plurals>
+    <plurals name="picker_recent_days">
+        <item quantity="other">過去 %d 日間</item>
+    </plurals>
+
+    <!-- Photo picker -->
+    <string name="picker_title">最近の写真</string>
+
+    <string name="calendar_go_today">今日に戻る</string>
+
+    <!-- Settings: developer (debug builds only) -->
+    <string name="settings_developer">開発者</string>
+    <string name="settings_insert_mock">テストデータを追加</string>
+    <string name="settings_insert_mock_hint">台北旅行のサンプル写真</string>
+    <string name="settings_insert_mock_done">%d 枚の写真を追加しました</string>
+
+    <!-- Photo viewer -->
+    <string name="viewer_edit">ひとことを編集</string>
+    <string name="picker_subtitle">フォトライブラリ・撮影日時順</string>
+    <string name="picker_add">%d 枚追加</string>
+    <string name="picker_open_camera">撮影</string>
+
+    <!-- Camera -->
+    <string name="camera_title">カメラ</string>
+
+    <!-- Edit note -->
+    <string name="note_title">ひとこと</string>
+    <string name="note_photo_label">写真 #%d</string>
+
+    <!-- Daily collage -->
+    <string name="collage_title">デイリーコラージュ</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">日付を選択</string>
+    <string name="calendar_view_day">この日を見る</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <string name="settings_language">言語</string>
+    <string name="settings_about">このアプリについて</string>
+    <string name="language_name_zh_tw">繁体字中国語</string>
+    <string name="language_name_en">英語</string>
+    <string name="language_name_ja">日本語</string>
+    <string name="group_subtitle">%1$s・%2$s</string>
+
+    <!-- Common (2) -->
+    <string name="action_delete">削除</string>
+    <string name="action_cancel">キャンセル</string>
+
+    <!-- Photo picker (2) -->
+    <string name="picker_all_albums">すべてのアルバム</string>
+    <string name="picker_permission_title">写真へのアクセスを許可</string>
+    <string name="picker_permission_body">最近撮った写真を一覧にして、旅に追加できるようにします。</string>
+    <string name="picker_permission_grant">許可する</string>
+    <string name="picker_select_more">写真をさらに選択</string>
+    <string name="picker_empty">最近の写真はありません</string>
+    <string name="picker_select">写真を選択</string>
+
+    <!-- Camera (2) -->
+    <string name="camera_flash">フラッシュ</string>
+    <string name="camera_switch">カメラ切替</string>
+    <string name="camera_shutter">撮影</string>
+    <string name="camera_last_photo">直前の写真</string>
+    <string name="camera_locating">位置を取得中…</string>
+    <string name="camera_no_location">位置情報なし</string>
+    <string name="camera_permission_body">撮影にはカメラへのアクセスが必要です。</string>
+    <string name="camera_permission_grant">カメラを許可</string>
+    <string name="camera_failed">撮影できませんでした</string>
+
+    <!-- Edit note (2) -->
+    <string name="note_label">この瞬間のひとこと</string>
+    <string name="note_placeholder">ひとこと書く…</string>
+    <string name="note_counter">%1$d / %2$d</string>
+    <string name="note_retake">撮り直す</string>
+    <string name="note_save">旅に追加</string>
+    <string name="note_delete">写真を削除</string>
+    <string name="note_delete_title">この写真を削除しますか？</string>
+    <string name="note_delete_body">旅から削除されます。元の写真はアルバムに残ります。</string>
+
+    <!-- Daily collage (2) -->
+    <string name="collage_output_hint">1080 × 1920・Instagram ストーリーズ用</string>
+    <string name="collage_layout">レイアウト</string>
+    <string name="collage_layout_scatter">散らばりチェキ</string>
+    <string name="collage_layout_grid">グリッド</string>
+    <string name="collage_layout_film">フィルム</string>
+    <string name="collage_show_place">場所</string>
+    <string name="collage_show_time">時間</string>
+    <string name="collage_show_note">ひとこと</string>
+    <string name="collage_save">アルバムに保存</string>
+    <string name="collage_share">ストーリーズでシェア</string>
+    <string name="collage_saved">アルバムに保存しました</string>
+    <string name="collage_save_failed">保存できませんでした</string>
+    <string name="collage_shuffle">シャッフル</string>
+    <string name="collage_empty">この日の写真はありません</string>
+    <plurals name="place_count">
+        <item quantity="other">%d か所</item>
+    </plurals>
+
+    <!-- Calendar (2) -->
+    <string name="calendar_prev_month">前の月</string>
+    <string name="calendar_next_month">次の月</string>
+    <string name="calendar_no_photos">写真なし</string>
+</resources>
