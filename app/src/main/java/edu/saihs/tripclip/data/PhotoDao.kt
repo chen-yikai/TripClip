@@ -49,4 +49,8 @@ interface PhotoDao {
 
     @Delete
     suspend fun delete(photo: Photo)
+
+    /** Deletes photos whose uri starts with [prefix]; returns how many were removed. */
+    @Query("DELETE FROM photos WHERE substr(uri, 1, length(:prefix)) = :prefix")
+    suspend fun deleteByUriPrefix(prefix: String): Int
 }

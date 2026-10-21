@@ -37,6 +37,7 @@ import edu.saihs.tripclip.TripClipApplication
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -100,24 +101,50 @@ fun SettingsScreen(onBack: () -> Unit) {
             AboutSection(Modifier.fillMaxWidth().heightIn(min = 260.dp))
         }
 
-        // Debug builds only: fill the journal with the sample Taipei trip.
+        // Debug builds only: fill the journal with the sample Taipei trip, or clear it again.
         val seeder = (context.applicationContext as TripClipApplication).mockDataSeeder
         if (seeder.isAvailable) {
             val scope = rememberCoroutineScope()
-            var inserting by remember { mutableStateOf(false) }
+            var busy by remember { mutableStateOf(false) }
+            fun toast(message: String) = Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             SettingsSection(stringResource(R.string.settings_developer)) {
                 MockDataRow(
-                    enabled = !inserting,
+                    enabled = !busy,
                     onInsert = { option ->
-                        inserting = true
+                        busy = true
                         scope.launch {
-                            val added = runCatching { seeder.insert(option.tag) }.getOrDefault(0)
-                            inserting = false
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.settings_insert_mock_done, added),
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                            val result = runCatching { seeder.insert(option.tag) }.getOrNull()
+                            busy = false
+                            toast(
+                                when {
+                                    result == null -> context.getString(R.string.settings_insert_mock_failed)
+                                    result.added > 0 -> context.resources.getQuantityString(
+                                        R.plurals.settings_insert_mock_added, result.added, result.added,
+                                    )
+                                    result.updated > 0 -> context.getString(R.string.settings_insert_mock_relabeled, option.nativeName)
+                                    else -> context.getString(R.string.settings_insert_mock_none)
+                                }
+                            )
+                        }
+                    },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                DeleteMockDataRow(
+                    enabled = !busy,
+                    onDelete = {
+                        busy = true
+                        scope.launch {
+                            val removed = runCatching { seeder.clear() }.getOrNull()
+                            busy = false
+                            toast(
+                                when {
+                                    removed == null -> context.getString(R.string.settings_delete_mock_failed)
+                                    removed > 0 -> context.resources.getQuantityString(
+                                        R.plurals.settings_delete_mock_done, removed, removed,
+                                    )
+                                    else -> context.getString(R.string.settings_delete_mock_none)
+                                }
+                            )
                         }
                     },
                 )
@@ -136,18 +163,50 @@ private fun MockDataRow(enabled: Boolean, onInsert: (AppLanguage) -> Unit) {
         Text(stringResource(R.string.settings_insert_mock_hint), fontSize = 12.sp, color = colors.onSurfaceVariant)
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             AppLanguage.entries.forEach { option ->
-                Surface(
-                    onClick = { onInsert(option) },
-                    enabled = enabled,
-                    shape = CircleShape,
-                    color = colors.surfaceContainerLowest,
-                    contentColor = if (enabled) colors.onSurface else colors.onSurfaceVariant,
-                    border = BorderStroke(1.dp, colors.outlineVariant),
-                ) {
-                    Text(option.nativeName, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
-                }
+                ChipButton(option.nativeName, enabled = enabled, onClick = { onInsert(option) })
             }
         }
+    }
+}
+
+/** "Delete mock data": removes only the sample photos, not the user's own. */
+@Composable
+private fun DeleteMockDataRow(enabled: Boolean, onDelete: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f).padding(end = 12.dp)) {
+            Text(stringResource(R.string.settings_delete_mock), fontSize = 17.sp, color = colors.onSurface)
+            Text(stringResource(R.string.settings_delete_mock_hint), fontSize = 12.sp, color = colors.onSurfaceVariant)
+        }
+        ChipButton(
+            stringResource(R.string.settings_delete_mock_action),
+            enabled = enabled,
+            onClick = onDelete,
+            contentColor = colors.error,
+        )
+    }
+}
+
+@Composable
+private fun ChipButton(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = CircleShape,
+        color = colors.surfaceContainerLowest,
+        contentColor = if (enabled) contentColor else colors.onSurfaceVariant,
+        border = BorderStroke(1.dp, colors.outlineVariant),
+    ) {
+        Text(text, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
     }
 }
 

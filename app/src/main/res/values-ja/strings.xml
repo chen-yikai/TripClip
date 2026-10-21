@@ -35,7 +35,20 @@
     <string name="settings_developer">開発者</string>
     <string name="settings_insert_mock">テストデータを追加</string>
     <string name="settings_insert_mock_hint">台北旅行のサンプル写真。ひとことと場所の言語を選んでください</string>
-    <string name="settings_insert_mock_done">%d 枚の写真を追加しました</string>
+    <plurals name="settings_insert_mock_added">
+        <item quantity="other">%d 枚のテスト写真を追加しました</item>
+    </plurals>
+    <string name="settings_insert_mock_relabeled">テスト写真を%sに切り替えました</string>
+    <string name="settings_insert_mock_none">テスト写真はすでに日記にあります</string>
+    <string name="settings_insert_mock_failed">テストデータを追加できませんでした</string>
+    <string name="settings_delete_mock">テストデータを削除</string>
+    <string name="settings_delete_mock_hint">サンプル写真とひとことを削除します。自分の写真は残ります</string>
+    <string name="settings_delete_mock_action">削除</string>
+    <plurals name="settings_delete_mock_done">
+        <item quantity="other">%d 枚のテスト写真を削除しました</item>
+    </plurals>
+    <string name="settings_delete_mock_none">削除するテスト写真はありません</string>
+    <string name="settings_delete_mock_failed">テストデータを削除できませんでした</string>
 
     <!-- Photo viewer -->
     <string name="viewer_edit">ひとことを編集</string>

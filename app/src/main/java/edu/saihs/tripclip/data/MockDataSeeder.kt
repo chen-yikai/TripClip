@@ -25,7 +25,8 @@ import java.time.ZoneId
  *
  * Images are copied into app storage and shared through the FileProvider. Safe to run repeatedly:
  * mock photos inserted before are updated to match the JSON, and other photos already in the
- * journal at the same capture time (e.g. imported from the gallery) are left alone.
+ * journal at the same capture time (e.g. imported from the gallery) are left alone. [clear] removes
+ * the mock photos (recognised by their FileProvider uri) and their copied images.
  */
 class MockDataSeeder(
     private val context: Context,
@@ -40,15 +41,15 @@ class MockDataSeeder(
 
     /**
      * Inserts the mock photos with place names and notes in [languageTag] ("zh-TW", "en" or "ja"),
-     * updating ones inserted before — so picking another language re-labels them. Returns how many
-     * were newly added.
+     * updating ones inserted before — so picking another language re-labels them.
      */
-    suspend fun insert(languageTag: String): Int = withContext(Dispatchers.IO) {
+    suspend fun insert(languageTag: String): InsertResult = withContext(Dispatchers.IO) {
         val json = context.assets.open("$AssetDir/${dataFileFor(languageTag)}").bufferedReader().use { it.readText() }
         val entries = JSONArray(json)
         val imageDir = File(context.filesDir, ImageDir).apply { mkdirs() }
         val now = System.currentTimeMillis()
         val zone = ZoneId.systemDefault()
+        var updated = 0
 
         val photos = (0 until entries.length()).mapNotNull { index ->
             val entry = entries.getJSONObject(index)
@@ -82,6 +83,7 @@ class MockDataSeeder(
                 // Inserted by an earlier run: bring it in line with the JSON (e.g. a moved date).
                 existing != null -> {
                     repository.updatePhoto(photo.copy(id = existing.id))
+                    updated++
                     null
                 }
                 // The same shot is already in the journal from elsewhere (e.g. imported from the gallery).
@@ -89,8 +91,22 @@ class MockDataSeeder(
                 else -> photo
             }
         }
-        repository.addPhotos(photos).size
+        InsertResult(added = repository.addPhotos(photos).size, updated = updated)
     }
+
+    /** Deletes the mock photos and their copied images; returns how many photos were removed. */
+    suspend fun clear(): Int = withContext(Dispatchers.IO) {
+        val imageDir = File(context.filesDir, ImageDir)
+        // Every mock image is shared from the same FileProvider directory, so its uri prefix marks them.
+        val prefix = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(imageDir, "x"))
+            .toString().removeSuffix("x")
+        val removed = repository.deletePhotosWithUriPrefix(prefix)
+        imageDir.deleteRecursively()
+        removed
+    }
+
+    /** [added] new photos; [updated] mock photos from an earlier run brought in line with the JSON. */
+    data class InsertResult(val added: Int, val updated: Int)
 
     /** The same photos, times and GPS in every file; only `placeName` and `note` are translated. */
     private fun dataFileFor(languageTag: String): String = when {

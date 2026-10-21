@@ -69,4 +69,7 @@ class PhotoRepository(
     suspend fun deletePhoto(id: Long) {
         dao.getById(id)?.let { dao.delete(it) }
     }
+
+    /** Deletes every photo whose uri starts with [prefix]; returns how many were removed. */
+    suspend fun deletePhotosWithUriPrefix(prefix: String): Int = dao.deleteByUriPrefix(prefix)
 }
