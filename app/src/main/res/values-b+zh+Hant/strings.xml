@@ -35,7 +35,20 @@
     <string name="settings_developer">開發者</string>
     <string name="settings_insert_mock">插入測試資料</string>
     <string name="settings_insert_mock_hint">台北旅遊的範例照片，選擇心得與地點的語言</string>
-    <string name="settings_insert_mock_done">已加入 %d 張照片</string>
+    <plurals name="settings_insert_mock_added">
+        <item quantity="other">已加入 %d 張測試照片</item>
+    </plurals>
+    <string name="settings_insert_mock_relabeled">測試照片已切換為%s</string>
+    <string name="settings_insert_mock_none">測試照片已在日誌中</string>
+    <string name="settings_insert_mock_failed">無法插入測試資料</string>
+    <string name="settings_delete_mock">刪除測試資料</string>
+    <string name="settings_delete_mock_hint">移除範例照片與心得，你自己的照片會保留</string>
+    <string name="settings_delete_mock_action">刪除</string>
+    <plurals name="settings_delete_mock_done">
+        <item quantity="other">已刪除 %d 張測試照片</item>
+    </plurals>
+    <string name="settings_delete_mock_none">沒有可刪除的測試照片</string>
+    <string name="settings_delete_mock_failed">無法刪除測試資料</string>
 
     <!-- Photo viewer -->
     <string name="viewer_edit">編輯心得</string>

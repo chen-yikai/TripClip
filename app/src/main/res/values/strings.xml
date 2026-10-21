@@ -43,7 +43,22 @@
     <string name="settings_developer">Developer</string>
     <string name="settings_insert_mock">Insert mock data</string>
     <string name="settings_insert_mock_hint">Sample photos from a Taipei trip, in the language you pick</string>
-    <string name="settings_insert_mock_done">Added %d photos</string>
+    <plurals name="settings_insert_mock_added">
+        <item quantity="one">Added %d mock photo</item>
+        <item quantity="other">Added %d mock photos</item>
+    </plurals>
+    <string name="settings_insert_mock_relabeled">Mock photos switched to %s</string>
+    <string name="settings_insert_mock_none">The mock photos are already in your journal</string>
+    <string name="settings_insert_mock_failed">Couldn\'t insert mock data</string>
+    <string name="settings_delete_mock">Delete mock data</string>
+    <string name="settings_delete_mock_hint">Removes the sample photos and their notes. Your own photos are kept.</string>
+    <string name="settings_delete_mock_action">Delete</string>
+    <plurals name="settings_delete_mock_done">
+        <item quantity="one">Deleted %d mock photo</item>
+        <item quantity="other">Deleted %d mock photos</item>
+    </plurals>
+    <string name="settings_delete_mock_none">No mock photos to delete</string>
+    <string name="settings_delete_mock_failed">Couldn\'t delete mock data</string>
 
     <!-- Photo viewer -->
     <string name="viewer_edit">Edit note</string>
