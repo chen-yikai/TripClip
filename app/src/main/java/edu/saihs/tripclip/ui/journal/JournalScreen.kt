@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -140,7 +141,8 @@ private fun JournalContent(
 
     // Scroll to the focused photo once; cleared after its row has scrolled to it (survives returning here).
     var pendingFocus by rememberSaveable(focusPhotoUri) { mutableStateOf(focusPhotoUri) }
-    val listState = rememberLazyListState()
+    // A fresh scroll position per day, so switching dates starts at the top (kept when returning to the same day).
+    val listState = rememberSaveable(state.selectedDate, saver = LazyListState.Saver) { LazyListState() }
     LaunchedEffect(pendingFocus, state.groups) {
         val target = pendingFocus ?: return@LaunchedEffect
         val groupIndex = state.groups.indexOfFirst { group -> group.photos.any { it.uri == target } }

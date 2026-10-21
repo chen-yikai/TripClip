@@ -97,9 +97,9 @@ fun SettingsScreen(onBack: () -> Unit) {
             }
         }
 
-        SettingsSection(stringResource(R.string.settings_about)) {
-            AboutSection(Modifier.fillMaxWidth().heightIn(min = 260.dp))
-        }
+//        SettingsSection(stringResource(R.string.settings_about)) {
+//            AboutSection(Modifier.fillMaxWidth().heightIn(min = 260.dp))
+//        }
 
         // Debug builds only: fill the journal with the sample Taipei trip, or clear it again.
         val seeder = (context.applicationContext as TripClipApplication).mockDataSeeder
