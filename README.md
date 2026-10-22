@@ -1,6 +1,7 @@
 # TripClip
 
-日籍學生參訪 職類體驗
+日籍學生參訪 職類體驗 APP
+（參訪前一個晚上趕出來的QQ
 
 TripClip 是一款旅行手帳 App：拍照或從相簿加入照片，App 會依照日期、地點與時間整理成拍立得風格的旅程紀錄，還能寫下心得、做成每日拼貼分享出去。
 
@@ -102,3 +103,6 @@ app/src/main/java/edu/saihs/tripclip/
     ├── settings/  設定
     └── navigation/ 導覽與轉場
 ```
+## License
+
+This project is licensed under the [MIT License](LICENSE).
